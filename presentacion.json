@@ -1,0 +1,6 @@
+{
+  "titulo": "K-Test · Reunión con TI",
+  "descripcion": "Contexto de K-Test y orientación de TI sobre arquitectura e integración con admisiones.",
+  "icono": "recursos/logo.svg",
+  "orden": ["portada", "objetivo", "que-es", "demo", "arquitectura", "ruta", "decisiones", "cierre"]
+}

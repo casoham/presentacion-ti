@@ -1,0 +1,52 @@
+/* Reunión con TI: mismo tema oscuro que la presentación a directivos, distinto de la app. */
+
+/* ===== Objetivo: los dos bloques de la reunión ===== */
+.bloques { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+.bloque { position: relative; border: 1.5px solid var(--linea); padding: 56px; min-height: 520px; display: flex; flex-direction: column; gap: 28px; overflow: hidden; background: rgba(238,242,248,0.02); }
+.bloque.destacado { border-color: var(--acento); }
+.bloque .minutos { font-size: 140px; line-height: 1; color: var(--azul); }
+.bloque h3 { font-size: 56px; }
+.bloque .texto { color: var(--suave); }
+.avance-bloque { position: absolute; left: 0; bottom: 0; height: 8px; width: 100%; background: var(--azul); transform-origin: 0 50%; animation: crecer-h 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i) * 300ms + 700ms); }
+
+/* ===== Arquitectura: cajas, conectores que se dibujan y datos que viajan ===== */
+.diagrama { position: relative; width: 1664px; height: 620px; }
+.conectores { position: absolute; left: 0; top: 0; }
+.conector { fill: none; stroke: var(--acento); stroke-width: 3; stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 0.7s ease forwards; animation-delay: calc(var(--i) * 120ms + 300ms); }
+.dato { fill: var(--acento); }
+.caja { position: absolute; width: 440px; min-height: 200px; border: 1.5px solid var(--linea); background: #0d1526; padding: 28px 32px; display: flex; flex-direction: column; gap: 18px; }
+.caja.acceso { min-height: 132px; padding: 20px 32px; }
+.caja h3 { font-size: 36px; }
+.piezas { display: flex; flex-wrap: wrap; gap: 10px; }
+.piezas p { font-size: 24px; padding: 6px 16px; border: 1.5px solid var(--linea); border-radius: 999px; }
+.marco-despliegue { position: absolute; left: 584px; top: 168px; width: 1080px; height: 268px; border: 2px dashed var(--acento); border-radius: 10px; animation: aparecer 0.6s ease both 1.4s, respirar 3s ease-in-out infinite 2s; }
+.etiqueta-marco { position: absolute; right: 8px; top: -42px; font-size: 24px; font-weight: 600; color: var(--acento); }
+@keyframes respirar { 0%, 100% { border-color: rgba(106,165,255,0.45); } 50% { border-color: rgba(106,165,255,1); } }
+.calidad { position: absolute; left: 0; top: 500px; width: 1664px; display: flex; align-items: center; gap: 20px; padding-top: 24px; border-top: 1.5px solid var(--linea); }
+.calidad .piezas p { border-color: var(--acento); }
+
+/* ===== Ruta: hoy → versión rápida → dos destinos posibles ===== */
+.mapa-ruta { position: relative; width: 1664px; height: 560px; }
+.trazo-ruta { position: absolute; left: 0; top: 0; }
+.tramo-ruta { fill: none; stroke: var(--acento); stroke-width: 4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 0.9s ease forwards; animation-delay: calc(var(--i) * 300ms + 300ms); }
+.tramo-ruta.opcion { stroke: rgba(106,165,255,0.6); }
+.hito-ruta { position: absolute; width: 420px; display: flex; flex-direction: column; gap: 8px; padding-top: 40px; }
+.hito-ruta .nodo { position: absolute; top: 66px; left: 46px; width: 28px; height: 28px; border-radius: 50%; background: var(--fondo); border: 4px solid var(--acento); }
+.hito-ruta.principal .nodo { background: var(--azul); border-color: var(--azul); box-shadow: 0 0 0 10px rgba(47,128,255,0.18); }
+.hito-ruta.destino .nodo { left: -14px; }
+.hito-ruta .cuando-ruta { font-size: 24px; font-weight: 600; color: var(--acento); margin-top: 70px; }
+.hito-ruta.destino .cuando-ruta { margin-top: 0; margin-left: 40px; }
+.hito-ruta.destino h3 { margin-left: 40px; }
+.hito-ruta h3 { font-size: 40px; }
+.hito-ruta:not(.destino) .cuando-ruta, .hito-ruta:not(.destino) h3 { margin-left: 24px; }
+
+/* ===== Decisiones: una por clic ===== */
+.decisiones { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.decision { display: flex; gap: 32px; align-items: flex-start; border: 1.5px solid var(--linea); padding: 40px; min-height: 290px; background: rgba(238,242,248,0.02); transform: translateX(32px); transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.5s; }
+.decision.visible { transform: none; border-color: var(--acento); }
+.decision .indice { font-size: 72px; line-height: 1; color: var(--azul); flex: none; width: 56px; }
+.decision h3 { font-size: 44px; margin-bottom: 16px; }
+.decision .texto { color: var(--suave); }
+
+/* ===== Cierre ===== */
+#cierre .frase-grande { font-size: 104px; letter-spacing: -3px; }

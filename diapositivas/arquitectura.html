@@ -1,0 +1,21 @@
+<section id="arquitectura">
+<h2 class="titulo" style="margin-bottom:48px;">React y Node sobre Turso; el despliegue está por definir</h2>
+<div class="diagrama">
+<div class="marco-despliegue"><p class="etiqueta-marco">Despliegue por definir con TI</p></div>
+<svg class="conectores" width="1664" height="620" viewBox="0 0 1664 620" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<path id="c-nav-api" class="conector" style="--i:2" pathLength="1" d="M440 300 H612"/>
+<path id="c-api-db" class="conector" style="--i:4" pathLength="1" d="M1052 300 H1224"/>
+<path id="c-acceso" class="conector" style="--i:6" pathLength="1" d="M832 132 V200"/>
+<circle r="7" class="dato"><animateMotion dur="1.8s" begin="1.6s" repeatCount="indefinite" path="M440 300 H612"/></circle>
+<circle r="7" class="dato"><animateMotion dur="1.8s" begin="2.2s" repeatCount="indefinite" path="M1052 300 H1224"/></circle>
+<circle r="7" class="dato"><animateMotion dur="1.4s" begin="2.6s" repeatCount="indefinite" path="M832 132 V200"/></circle>
+</svg>
+<div class="caja entra" style="--i:1; left:0; top:200px;"><h3>Navegador</h3><div class="piezas"><p>React 18</p><p>Vite</p><p>TypeScript</p><p>Autoguardado sin conexión</p></div></div>
+<div class="caja entra" style="--i:3; left:612px; top:200px;"><h3>API en Node</h3><div class="piezas"><p>Sesiones HttpOnly por rol</p><p>Calificación en el servidor</p></div></div>
+<div class="caja entra" style="--i:5; left:1224px; top:200px;"><h3>Base de datos</h3><div class="piezas"><p>Turso (libSQL)</p><p>Migraciones</p><p>SQLite en local</p></div></div>
+<div class="caja acceso entra" style="--i:6; left:612px; top:0;"><h3>Acceso</h3><div class="piezas"><p>Google</p><p>Microsoft Entra ID</p></div></div>
+<div class="calidad entra" style="--i:8;"><p class="chico">Cada cambio pasa por</p><div class="piezas"><p>Lint</p><p>Tipos</p><p>Vitest</p><p>Pruebas de API</p><p>Playwright</p><p>Accesibilidad (axe)</p></div><p class="chico">en GitHub Actions</p></div>
+</div>
+<div class="pie"><p>Fuente: repositorio de K-Test, rama main</p><p class="pag"></p></div>
+<aside>Así está hecho hoy: aplicación en React con Vite y TypeScript; API en Node con sesiones HttpOnly por rol (estudiante y docente) y la calificación se hace en el servidor; base de datos Turso con migraciones, y SQLite para desarrollo. Acceso con Google y Microsoft Entra ID. Cada cambio pasa por lint, tipos, pruebas y accesibilidad en GitHub Actions. El despliegue en Vercel quedó detenido: dónde debe vivir es una de las decisiones que queremos tomar con ustedes.</aside>
+</section>

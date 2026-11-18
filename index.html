@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K-Test · Reunión con TI</title>
+<meta name="description" content="Contexto de K-Test y orientación de TI sobre arquitectura e integración con admisiones.">
+<link rel="icon" href="recursos/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+/* =====================================================================
+   Base de las presentaciones de Soham. Lienzo 1920×1080, márgenes de 128px.
+   Los colores y tipografías se cambian en tema.css de cada proyecto.
+   ===================================================================== */
+:root {
+  --fondo: #0a101c;        /* fondo principal */
+  --tinta: #eef2f8;        /* texto */
+  --suave: #9aa6ba;        /* texto secundario, pies */
+  --linea: rgba(238, 242, 248, 0.18);
+  --barra: #2a3a57;        /* barras sin resaltar */
+  --azul: #2f80ff;         /* color fuerte: barras resaltadas, cifras */
+  --acento: #6aa5ff;       /* acento para texto e íconos */
+  --declaracion: #006dff;  /* fondo de la diapositiva de frase */
+  --pulso: 106, 165, 255;  /* color RGB del fondo vivo */
+  --letra-titulo: 'Space Grotesk', 'Inter', Arial, sans-serif;
+  --letra-texto: 'Inter', Arial, sans-serif;
+  --letra-cifra: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+* { margin: 0; box-sizing: border-box; }
+html, body { height: 100%; background: #05080f; overflow: hidden; }
+#escenario { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
+section { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; isolation: isolate;
+  padding: 128px 128px 160px; background: var(--fondo); color: var(--tinta); font-family: var(--letra-texto); }
+section.activa { display: block; }
+section aside { display: none; }
+section.declaracion { background: var(--declaracion); color: #f7f9fc; --pulso: 255, 255, 255; }
+.ambiente { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; z-index: -1; pointer-events: none; }
+
+/* Tipos: 160 / 72 / 44 / 32 / 24 */
+h1, h2, h3 { font-family: var(--letra-titulo); font-weight: 600; }
+.titulo { font-family: var(--letra-titulo); font-size: 72px; font-weight: 600; line-height: 1.05; letter-spacing: -2px; margin-bottom: 64px; }
+h3 { font-size: 44px; line-height: 1.1; letter-spacing: -0.5px; }
+p { font-size: 32px; }
+.texto { font-size: 32px; line-height: 1.35; }
+.bajada { font-size: 32px; line-height: 1.35; color: var(--suave); }
+.chico { font-size: 24px; line-height: 1.4; color: var(--suave); }
+.num { font-family: var(--letra-cifra); font-weight: 500; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+.grande { font-size: 160px; line-height: 1; }
+.medio { font-size: 72px; line-height: 1; }
+.resalta { color: var(--acento); }
+
+/* Pie: fuente de los datos y número de página (nada de secciones) */
+.pie { position: absolute; left: 128px; bottom: 64px; width: 1664px; display: flex; justify-content: space-between; }
+.pie p { font-size: 24px; color: var(--suave); }
+
+/* ===== Movimiento ===== */
+.entra { animation: llegar 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 120ms + 250ms); }
+.titulo { animation: llegar 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both 120ms; }
+@keyframes llegar { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+
+section.sale-adelante { display: block; animation: sale-izq 0.55s cubic-bezier(0.55, 0, 0.3, 1) both; }
+section.sale-atras { display: block; animation: sale-der 0.55s cubic-bezier(0.55, 0, 0.3, 1) both; }
+section.activa.llega-adelante { animation: llega-der 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+section.activa.llega-atras { animation: llega-izq 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+section.activa.mismo-grupo { animation: aparecer 0.35s ease both; }
+section.activa.mismo-grupo .titulo, section.activa.mismo-grupo .pie { animation: none; }
+@keyframes sale-izq { to { opacity: 0; transform: translateX(-180px); } }
+@keyframes sale-der { to { opacity: 0; transform: translateX(180px); } }
+@keyframes llega-der { from { opacity: 0; transform: translateX(240px); } to { opacity: 1; transform: none; } }
+@keyframes llega-izq { from { opacity: 0; transform: translateX(-240px); } to { opacity: 1; transform: none; } }
+
+.fragment { opacity: 0.16; transition: opacity 0.45s ease; }
+.fragment.visible { opacity: 1; }
+
+.icono-dibujo { color: var(--acento); animation: flotar 5s ease-in-out infinite alternate; animation-delay: calc(var(--i, 0) * 300ms + 1.6s); }
+.icono-dibujo path, .icono-dibujo rect, .icono-dibujo circle { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 1.3s ease forwards; animation-delay: calc(var(--i, 0) * 120ms + 500ms); }
+@keyframes trazar { to { stroke-dashoffset: 0; } }
+@keyframes flotar { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+
+/* ===== Portada: logo que se arma y nombre que sale de él ===== */
+.portada-centro { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: flex; align-items: center; justify-content: center; gap: 72px; }
+.marca .disco { transform-box: fill-box; transform-origin: center; animation: crecer-disco 0.9s cubic-bezier(0.2, 0.9, 0.2, 1.15) both 0.2s; }
+.marca .anillo { transform-box: fill-box; transform-origin: center; animation: girar 40s linear infinite, aparecer 1s ease both 1s; }
+.marca .pieza { animation: armar 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 150ms + 0.7s); }
+.marca-texto { font-family: var(--letra-titulo); font-size: 260px; font-weight: 700; letter-spacing: -6px; line-height: 1; animation: salir-del-logo 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both 1.25s; }
+@keyframes crecer-disco { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes girar { to { transform: rotate(360deg); } }
+@keyframes armar { from { opacity: 0; transform: var(--desde, translateY(-40px)); } to { opacity: 1; transform: none; } }
+@keyframes salir-del-logo { from { opacity: 0; transform: translateX(-160px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* ===== Composición ===== */
+.dos { display: flex; gap: 72px; align-items: flex-start; }
+.portada-sub { font-family: var(--letra-titulo); font-size: 44px; line-height: 1.2; font-weight: 500; }
+.firma { margin-top: 40px; font-size: 28px; color: var(--suave); }
+
+/* ===== Tarjetas e íconos ===== */
+.razones { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 72px; margin-top: 24px; }
+.razon { display: flex; flex-direction: column; gap: 24px; }
+.razon h3 { font-size: 48px; }
+.razon .texto { color: var(--suave); }
+.dos-tarjetas { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+.tarjeta-grande { border: 1.5px solid var(--linea); padding: 56px; display: flex; flex-direction: column; gap: 48px; min-height: 470px; background: rgba(238, 242, 248, 0.02); }
+.tarjeta-grande h3 { font-size: 56px; }
+
+/* ===== Barras verticales (temporadas) ===== */
+.grafica { display: flex; align-items: flex-end; gap: 24px; border-bottom: 2px solid var(--linea); }
+.col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 12px; width: 120px; }
+.col .valor { font-size: 28px; animation: llegar 0.5s ease both; animation-delay: calc(var(--i, 0) * 70ms + 900ms); }
+.col .bar { width: 92px; background: var(--barra); position: relative; overflow: hidden; }
+.col .bar.alta { background: var(--azul); }
+.meses { display: flex; gap: 24px; margin-top: 16px; }
+.meses p { width: 120px; text-align: center; font-size: 24px; color: var(--suave); }
+.meses p.alta { color: var(--tinta); font-weight: 600; }
+.barra { transform-origin: 50% 100%; animation: crecer 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 200ms); }
+@keyframes crecer { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.viva::after { content: ''; position: absolute; left: 0; right: 0; height: 140px; top: -140px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.35), rgba(255,255,255,0)); animation: barrido 3.2s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 250ms + 1.6s); }
+@keyframes barrido { from { transform: translateY(0); } to { transform: translateY(620px); } }
+
+/* ===== Barras horizontales (distribución) ===== */
+.filas { display: flex; flex-direction: column; gap: 40px; }
+.fila { display: flex; align-items: center; gap: 28px; }
+.fila .etq { width: 220px; font-size: 40px; text-align: right; }
+.fila .barh { height: 100px; background: var(--barra); }
+.fila .barh.alta { background: var(--azul); }
+.fila .valor { font-size: 40px; }
+.barra-h { transform-origin: 0 50%; animation: crecer-h 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 90ms + 200ms); }
+@keyframes crecer-h { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ===== Pesas: antes → después ===== */
+.leyenda { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.leyenda .chico { margin-right: 24px; }
+.punto-ley { width: 20px; height: 20px; border-radius: 50%; display: inline-block; }
+.punto-ley.antes, .punto.antes { background: #6b778c; }
+.punto-ley.ahora { background: var(--azul); }
+.pesas { display: flex; flex-direction: column; }
+.grupo-pesas { font-size: 24px; color: var(--suave); margin-top: 8px; font-weight: 600; }
+.pesa { display: grid; grid-template-columns: 400px 1000px 220px; gap: 24px; align-items: center; height: 64px; }
+.pista { position: relative; height: 64px; background: repeating-linear-gradient(90deg, rgba(238,242,248,0.12) 0 1.5px, transparent 1.5px 250px); }
+.tramo { position: absolute; top: 29px; height: 6px; background: var(--azul); transform-origin: 0 50%; animation: crecer-h 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 120ms + 600ms); }
+.punto { position: absolute; top: 20px; width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; }
+.punto.ahora { background: var(--azul); animation: deslizar 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 120ms + 600ms); }
+.punto.ahora::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: latido 2.6s ease-out infinite; animation-delay: calc(var(--i, 0) * 120ms + 1.6s); }
+@keyframes deslizar { from { transform: translateX(var(--d)); } to { transform: none; } }
+@keyframes latido { 0% { transform: scale(1); opacity: 0.45; } 100% { transform: scale(2.6); opacity: 0; } }
+.eje { display: flex; justify-content: space-between; margin-left: 424px; width: 1000px; margin-top: 8px; }
+.eje p { font-size: 24px; color: var(--suave); width: 0; display: flex; justify-content: center; font-family: var(--letra-cifra); }
+
+/* ===== Carrusel de comentarios ===== */
+.carrusel { position: relative; margin: 56px -128px 0; width: 1920px; display: flex; flex-direction: column; gap: 20px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.cinta { display: flex; gap: 20px; width: max-content; animation: correr 260s linear infinite; }
+.cinta.reversa { animation-direction: reverse; animation-duration: 300s; }
+.cinta.lenta { animation-duration: 340s; }
+@keyframes correr { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.comentario { flex: none; font-size: 28px; line-height: 1.3; padding: 18px 28px; border: 1.5px solid var(--linea); background: rgba(238,242,248,0.04); white-space: nowrap; }
+.comentario b { color: var(--acento); }
+
+/* ===== Semana: un día fijo y el resto se enciende ===== */
+.semana { display: grid; grid-template-columns: repeat(7, 1fr); gap: 16px; }
+.dia { height: 260px; border: 1.5px solid var(--linea); padding: 28px; display: flex; flex-direction: column; justify-content: space-between; animation: encender 0.6s ease both; animation-delay: calc(var(--i, 0) * 220ms + 1100ms); }
+.dia .nombre-dia { font-family: var(--letra-titulo); font-size: 40px; font-weight: 600; }
+.dia .uso { font-size: 28px; font-weight: 600; animation: aparecer 0.5s ease both; animation-delay: calc(var(--i, 0) * 220ms + 1300ms); }
+.dia.fijo { background: var(--tinta); color: var(--fondo); border-color: var(--tinta); animation: none; }
+.dia.fijo .uso { animation: none; }
+@keyframes encender { from { background: transparent; border-color: var(--linea); } to { background: var(--azul); border-color: var(--azul); } }
+
+/* ===== Monitor: el producto siempre dentro de una pantalla ===== */
+.monitor { display: flex; flex-direction: column; align-items: center; flex: none; }
+.monitor.grande { margin: 0 auto; }
+.pantalla { background: #04060b; border: 2px solid #2b3647; border-radius: 22px; padding: 18px; box-shadow: 0 40px 90px rgba(0,0,0,0.55); }
+.pantalla img, .pantalla video { display: block; border-radius: 6px; background: #ffffff; }
+.cuello { width: 120px; height: 52px; background: linear-gradient(180deg, #2b3647, #161e2c); }
+.base-monitor { width: 380px; height: 14px; border-radius: 8px; background: #2b3647; }
+
+/* ===== Construcción por pasos (data-pasos) ===== */
+.obra-cuerpo { display: flex; gap: 56px; align-items: center; }
+.obra-dibujo { width: 760px; flex: none; }
+.capa { transform-box: fill-box; transform-origin: 50% 100%; transition: opacity 0.7s ease, transform 1s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.lista-pasos { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; width: 848px; }
+.item-paso { border-left: 3px solid var(--linea); padding: 8px 0 8px 28px; opacity: 0.38; transition: opacity 0.5s ease, border-color 0.5s ease; }
+.nombre-paso { font-family: var(--letra-titulo); font-size: 32px; font-weight: 600; transition: font-size 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.5s ease 0.15s, margin 0.5s ease; }
+.chips p { font-size: 24px; padding: 6px 18px; border: 1.5px solid var(--acento); border-radius: 999px; }
+/* Paso actual (el armador no lo genera: escríbelo para el número de pasos que uses, ver componentes.md) */
+
+/* ===== Frase final ===== */
+.frase { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; padding: 128px; display: flex; align-items: center; justify-content: space-between; gap: 64px; }
+.frase-grande { font-family: var(--letra-titulo); font-size: 132px; font-weight: 600; line-height: 1; letter-spacing: -4px; }
+
+/* ===== Notas y ayuda ===== */
+#notas { position: fixed; left: 0; right: 0; bottom: 0; max-height: 40vh; overflow: auto; padding: 16px 24px; background: rgba(17,17,17,.94); color: #f3f5f8; font: 18px/1.5 var(--letra-texto); display: none; z-index: 10; }
+#notas.abierta { display: block; }
+#ayuda { position: fixed; right: 16px; bottom: 12px; color: #8a93a3; font: 13px var(--letra-texto); opacity: 0; transition: opacity .3s; pointer-events: none; }
+body.raton #ayuda { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}
+
+/* Reunión con TI: mismo tema oscuro que la presentación a directivos, distinto de la app. */
+
+/* ===== Objetivo: los dos bloques de la reunión ===== */
+.bloques { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+.bloque { position: relative; border: 1.5px solid var(--linea); padding: 56px; min-height: 520px; display: flex; flex-direction: column; gap: 28px; overflow: hidden; background: rgba(238,242,248,0.02); }
+.bloque.destacado { border-color: var(--acento); }
+.bloque .minutos { font-size: 140px; line-height: 1; color: var(--azul); }
+.bloque h3 { font-size: 56px; }
+.bloque .texto { color: var(--suave); }
+.avance-bloque { position: absolute; left: 0; bottom: 0; height: 8px; width: 100%; background: var(--azul); transform-origin: 0 50%; animation: crecer-h 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i) * 300ms + 700ms); }
+
+/* ===== Arquitectura: cajas, conectores que se dibujan y datos que viajan ===== */
+.diagrama { position: relative; width: 1664px; height: 620px; }
+.conectores { position: absolute; left: 0; top: 0; }
+.conector { fill: none; stroke: var(--acento); stroke-width: 3; stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 0.7s ease forwards; animation-delay: calc(var(--i) * 120ms + 300ms); }
+.dato { fill: var(--acento); }
+.caja { position: absolute; width: 440px; min-height: 200px; border: 1.5px solid var(--linea); background: #0d1526; padding: 28px 32px; display: flex; flex-direction: column; gap: 18px; }
+.caja.acceso { min-height: 132px; padding: 20px 32px; }
+.caja h3 { font-size: 36px; }
+.piezas { display: flex; flex-wrap: wrap; gap: 10px; }
+.piezas p { font-size: 24px; padding: 6px 16px; border: 1.5px solid var(--linea); border-radius: 999px; }
+.marco-despliegue { position: absolute; left: 584px; top: 168px; width: 1080px; height: 268px; border: 2px dashed var(--acento); border-radius: 10px; animation: aparecer 0.6s ease both 1.4s, respirar 3s ease-in-out infinite 2s; }
+.etiqueta-marco { position: absolute; right: 8px; top: -42px; font-size: 24px; font-weight: 600; color: var(--acento); }
+@keyframes respirar { 0%, 100% { border-color: rgba(106,165,255,0.45); } 50% { border-color: rgba(106,165,255,1); } }
+.calidad { position: absolute; left: 0; top: 500px; width: 1664px; display: flex; align-items: center; gap: 20px; padding-top: 24px; border-top: 1.5px solid var(--linea); }
+.calidad .piezas p { border-color: var(--acento); }
+
+/* ===== Ruta: hoy → versión rápida → dos destinos posibles ===== */
+.mapa-ruta { position: relative; width: 1664px; height: 560px; }
+.trazo-ruta { position: absolute; left: 0; top: 0; }
+.tramo-ruta { fill: none; stroke: var(--acento); stroke-width: 4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazar 0.9s ease forwards; animation-delay: calc(var(--i) * 300ms + 300ms); }
+.tramo-ruta.opcion { stroke: rgba(106,165,255,0.6); }
+.hito-ruta { position: absolute; width: 420px; display: flex; flex-direction: column; gap: 8px; padding-top: 40px; }
+.hito-ruta .nodo { position: absolute; top: 66px; left: 46px; width: 28px; height: 28px; border-radius: 50%; background: var(--fondo); border: 4px solid var(--acento); }
+.hito-ruta.principal .nodo { background: var(--azul); border-color: var(--azul); box-shadow: 0 0 0 10px rgba(47,128,255,0.18); }
+.hito-ruta.destino .nodo { left: -14px; }
+.hito-ruta .cuando-ruta { font-size: 24px; font-weight: 600; color: var(--acento); margin-top: 70px; }
+.hito-ruta.destino .cuando-ruta { margin-top: 0; margin-left: 40px; }
+.hito-ruta.destino h3 { margin-left: 40px; }
+.hito-ruta h3 { font-size: 40px; }
+.hito-ruta:not(.destino) .cuando-ruta, .hito-ruta:not(.destino) h3 { margin-left: 24px; }
+
+/* ===== Decisiones: una por clic ===== */
+.decisiones { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.decision { display: flex; gap: 32px; align-items: flex-start; border: 1.5px solid var(--linea); padding: 40px; min-height: 290px; background: rgba(238,242,248,0.02); transform: translateX(32px); transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.5s; }
+.decision.visible { transform: none; border-color: var(--acento); }
+.decision .indice { font-size: 72px; line-height: 1; color: var(--azul); flex: none; width: 56px; }
+.decision h3 { font-size: 44px; margin-bottom: 16px; }
+.decision .texto { color: var(--suave); }
+
+/* ===== Cierre ===== */
+#cierre .frase-grande { font-size: 104px; letter-spacing: -3px; }
+
+</style>
+</head>
+<body>
+<main id="escenario" aria-live="polite">
+<section id="portada">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<div class="portada-centro">
+<svg class="marca" aria-label="Logo de K-Test" viewBox="-8 -8 80 80" width="420" height="420" xmlns="http://www.w3.org/2000/svg"><circle class="anillo" cx="32" cy="32" r="38" fill="none" stroke="#006dff" stroke-width="0.6" stroke-dasharray="2 3"/><circle class="disco" cx="32" cy="32" r="32" fill="#006DFF"/><g transform="translate(14.4 14) scale(0.4286)" fill="#FCFCFB"><path class="pieza" style="--i:0; --desde: translate(0, -40px)" d="M37.3872 31.1118L31.219 34.669L14.6444 25.1148L6.16826 29.999L31.219 44.4421L45.8633 36.0007V0L37.3872 4.88886V31.1118Z"/><path class="pieza" style="--i:1; --desde: translate(-40px, 30px)" d="M31.219 46.6677L0 64.668L8.47612 69.5569L31.219 56.4408L37.3872 59.998V84L45.8633 79.1111V55.1138L31.219 46.6677Z"/><path class="pieza" style="--i:2; --desde: translate(40px, 20px)" d="M83.2459 64.668L56.265 49.1121V41.9977L72.8396 32.4434V22.6704L47.7935 37.1135V54.001L74.7698 69.5569L83.2459 64.668Z"/></g></svg>
+<p class="marca-texto">K-TEST</p>
+</div>
+<aside>Buenas. Venimos a presentar K-Test: la plataforma donde los admitidos de Key practican la PAA desde donde estén.</aside>
+</section>
+
+<section id="objetivo">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<h2 class="titulo">Necesitamos su orientación antes de cerrar la arquitectura</h2>
+<div class="bloques">
+<div class="bloque entra" style="--i:1"><p class="num minutos">5 min</p><h3>Contexto y demo</h3><p class="texto">Qué es K-Test, cómo funciona y cómo está hecho</p><div class="avance-bloque" style="--i:1"></div></div>
+<div class="bloque destacado entra" style="--i:3"><p class="num minutos">5 min</p><h3>Necesidades y preguntas</h3><p class="texto">Lo que necesitamos de TI para integrarlo bien</p><div class="avance-bloque" style="--i:3"></div></div>
+</div>
+<div class="pie"><p></p><p class="pag"></p></div>
+<aside>Objetivo de la reunión: darles contexto y escuchar su orientación. Diez minutos: cinco de contexto y demo, cinco para nuestras necesidades y preguntas.</aside>
+</section>
+
+<section id="que-es">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<div style="display:flex; gap:64px; align-items:center; height:100%;">
+<div style="width:640px; flex:none; display:flex; flex-direction:column; gap:56px;">
+<h2 class="titulo" style="margin:0;">Una aplicación web para que los admitidos practiquen la PAA</h2>
+<div style="display:flex; flex-direction:column; gap:28px;">
+<div class="entra" style="--i:2; display:flex; gap:24px; align-items:center;"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:44px; height:44px; color:var(--acento);; flex:none;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p class="texto">Simulacro completo con tiempo real</p></div>
+<div class="entra" style="--i:3; display:flex; gap:24px; align-items:center;"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:44px; height:44px; color:var(--acento);; flex:none;"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg><p class="texto">Sprints de 15 minutos por tema</p></div>
+<div class="entra" style="--i:4; display:flex; gap:24px; align-items:center;"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:44px; height:44px; color:var(--acento);; flex:none;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><p class="texto">Portal del docente con el avance</p></div>
+</div>
+</div>
+<div class="monitor entra" style="--i:1;"><div class="pantalla"><img style="width:900px; height:506px;" src="recursos/captura-inicio.png" alt="Inicio del estudiante en K-Test"></div><div class="cuello"></div><div class="base-monitor"></div></div>
+</div>
+<div class="pie"><p></p><p class="pag"></p></div>
+<aside>Desde abril damos el Curso de Preparación para la PAA. K-Test lleva esa práctica a la semana: el admitido entra con su cuenta y hace simulacros y sprints; el docente ve su avance.</aside>
+</section>
+
+<section id="demo" style="padding:72px 128px;">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<div class="monitor grande entra"><div class="pantalla">
+<video src="recursos/demo.webm" poster="recursos/portada-demo.png" muted loop playsinline preload="auto" style="width:1400px; height:788px; object-fit:contain;" aria-label="Demo de K-Test: inicio, un sprint de Matemáticas, resultados por nivel y portal del docente"></video>
+</div><div class="cuello"></div><div class="base-monitor"></div></div>
+<aside>Video de 75 segundos, sin sonido. Si piden ver más, abrir K-Test en vivo (local). 1) Página de inicio. 2) Inicio del estudiante. 3) Sprint de Matemáticas: al responder avanza solo, se puede descartar y marcar. 4) Resultados por nivel. 5) Portal del docente.</aside>
+</section>
+
+<section id="arquitectura">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<h2 class="titulo" style="margin-bottom:48px;">React y Node sobre Turso; el despliegue está por definir</h2>
+<div class="diagrama">
+<div class="marco-despliegue"><p class="etiqueta-marco">Despliegue por definir con TI</p></div>
+<svg class="conectores" width="1664" height="620" viewBox="0 0 1664 620" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<path id="c-nav-api" class="conector" style="--i:2" pathLength="1" d="M440 300 H612"/>
+<path id="c-api-db" class="conector" style="--i:4" pathLength="1" d="M1052 300 H1224"/>
+<path id="c-acceso" class="conector" style="--i:6" pathLength="1" d="M832 132 V200"/>
+<circle r="7" class="dato"><animateMotion dur="1.8s" begin="1.6s" repeatCount="indefinite" path="M440 300 H612"/></circle>
+<circle r="7" class="dato"><animateMotion dur="1.8s" begin="2.2s" repeatCount="indefinite" path="M1052 300 H1224"/></circle>
+<circle r="7" class="dato"><animateMotion dur="1.4s" begin="2.6s" repeatCount="indefinite" path="M832 132 V200"/></circle>
+</svg>
+<div class="caja entra" style="--i:1; left:0; top:200px;"><h3>Navegador</h3><div class="piezas"><p>React 18</p><p>Vite</p><p>TypeScript</p><p>Autoguardado sin conexión</p></div></div>
+<div class="caja entra" style="--i:3; left:612px; top:200px;"><h3>API en Node</h3><div class="piezas"><p>Sesiones HttpOnly por rol</p><p>Calificación en el servidor</p></div></div>
+<div class="caja entra" style="--i:5; left:1224px; top:200px;"><h3>Base de datos</h3><div class="piezas"><p>Turso (libSQL)</p><p>Migraciones</p><p>SQLite en local</p></div></div>
+<div class="caja acceso entra" style="--i:6; left:612px; top:0;"><h3>Acceso</h3><div class="piezas"><p>Google</p><p>Microsoft Entra ID</p></div></div>
+<div class="calidad entra" style="--i:8;"><p class="chico">Cada cambio pasa por</p><div class="piezas"><p>Lint</p><p>Tipos</p><p>Vitest</p><p>Pruebas de API</p><p>Playwright</p><p>Accesibilidad (axe)</p></div><p class="chico">en GitHub Actions</p></div>
+</div>
+<div class="pie"><p>Fuente: repositorio de K-Test, rama main</p><p class="pag"></p></div>
+<aside>Así está hecho hoy: aplicación en React con Vite y TypeScript; API en Node con sesiones HttpOnly por rol (estudiante y docente) y la calificación se hace en el servidor; base de datos Turso con migraciones, y SQLite para desarrollo. Acceso con Google y Microsoft Entra ID. Cada cambio pasa por lint, tipos, pruebas y accesibilidad en GitHub Actions. El despliegue en Vercel quedó detenido: dónde debe vivir es una de las decisiones que queremos tomar con ustedes.</aside>
+</section>
+
+<section id="ruta">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<h2 class="titulo" style="margin-bottom:56px;">Primero una versión independiente; después, integrarla a admisiones</h2>
+<div class="mapa-ruta">
+<svg class="trazo-ruta" width="1664" height="560" viewBox="0 0 1664 560" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<path class="tramo-ruta" style="--i:1" pathLength="1" d="M60 280 H620"/>
+<path class="tramo-ruta" style="--i:3" pathLength="1" d="M620 280 H900 C1010 280 1050 110 1180 110 H1240"/>
+<path class="tramo-ruta opcion" style="--i:4" pathLength="1" d="M900 280 C1010 280 1050 450 1180 450 H1240"/>
+<circle r="8" class="dato"><animateMotion dur="3.2s" begin="2.4s" repeatCount="indefinite" path="M60 280 H620 H900 C1010 280 1050 110 1180 110 H1240"/></circle>
+<circle r="8" class="dato"><animateMotion dur="3.2s" begin="4s" repeatCount="indefinite" path="M60 280 H620 H900 C1010 280 1050 450 1180 450 H1240"/></circle>
+</svg>
+<div class="hito-ruta entra" style="--i:0; left:0; top:200px;"><span class="nodo"></span><p class="cuando-ruta">Hoy</p><h3>Prototipo funcionando</h3></div>
+<div class="hito-ruta principal entra" style="--i:2; left:520px; top:200px;"><span class="nodo"></span><p class="cuando-ruta">Primero</p><h3>Versión independiente, rápida y segura</h3></div>
+<div class="hito-ruta destino entra" style="--i:4; left:1240px; top:40px;"><span class="nodo"></span><p class="cuando-ruta">Después</p><h3>Sistema actual de admisiones</h3></div>
+<div class="hito-ruta destino entra" style="--i:5; left:1240px; top:380px;"><span class="nodo"></span><p class="cuando-ruta">O en 2027</p><h3>Nueva plataforma de admisiones</h3></div>
+</div>
+<div class="pie"><p></p><p class="pag"></p></div>
+<aside>Lo que nos piden nuestros jefes: primero algo fácil y rápido que funcione. A largo plazo, integrarlo al sistema actual de admisiones o a la nueva plataforma que sale en 2027, o rehacerlo dentro de ella. Queremos que lo que hagamos ahora no estorbe esa integración.</aside>
+</section>
+
+<section id="decisiones">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<h2 class="titulo" style="margin-bottom:48px;">Cuatro decisiones que necesitamos tomar con TI</h2>
+<div class="decisiones">
+<div class="decision fragment"><span class="num indice">1</span><div><h3>Arquitectura de admisiones</h3><p class="texto">¿Cómo están construidas las plataformas de admisiones hoy y cómo será la de 2027?</p></div></div>
+<div class="decision fragment"><span class="num indice">2</span><div><h3>Datos de los admitidos</h3><p class="texto">¿Cómo recibimos quién fue admitido y su ciclo: API, exportación o base compartida?</p></div></div>
+<div class="decision fragment"><span class="num indice">3</span><div><h3>Acceso con cuenta de Key</h3><p class="texto">¿Podemos usar el Microsoft Entra ID de Key para admitidos y docentes?</p></div></div>
+<div class="decision fragment"><span class="num indice">4</span><div><h3>Dónde debe vivir</h3><p class="texto">¿Nube externa o infraestructura de Key? ¿Qué políticas aplican a datos de menores y respaldos?</p></div></div>
+</div>
+<div class="pie"><p></p><p class="pag"></p></div>
+<aside>Cada clic muestra una decisión. Para cada una, la pregunta abierta es la misma: ¿con quién de TI la vemos y en qué plazo?</aside>
+</section>
+
+<section id="cierre" class="declaracion">
+<canvas class="ambiente" width="1920" height="1080" aria-hidden="true"></canvas>
+<div class="frase">
+<div style="display:flex; flex-direction:column; gap:48px; width:960px;">
+<p class="frase-grande entra" style="--i:1">Lo construimos para integrarse a lo que ustedes operan.</p>
+<img class="entra" style="--i:3; width:72px; height:72px;" src="recursos/logo.svg" alt="K-Test">
+</div>
+<img class="entra" style="--i:2; width:640px; height:561px; object-fit:contain;" src="recursos/conexion.svg" alt="Estructura conectada por una tubería azul a otro edificio">
+</div>
+<aside>Cerrar pidiendo el siguiente paso: quién de TI nos acompaña y cuándo nos volvemos a ver.</aside>
+</section>
+
+</main>
+<div id="notas" role="note"></div>
+<p id="ayuda">← → avanzar · F pantalla completa · N notas</p>
+<script>
+/* Motor de las presentaciones de Soham: navegación, transiciones que guían, pasos, cifras y fondo vivo. */
+(() => {
+  const escenario = document.getElementById('escenario');
+  const diapositivas = [...escenario.querySelectorAll(':scope > section')];
+  const notas = document.getElementById('notas');
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  diapositivas.forEach((d, i) => d.querySelectorAll('.pag').forEach((p) => { p.textContent = i + 1; }));
+  let actual = -1;
+  let escala = 1;
+
+  function ajustar() {
+    escala = Math.min(innerWidth / 1920, innerHeight / 1080);
+    escenario.style.transform = 'scale(' + escala + ') translate(-50%, -50%)';
+  }
+  const pasos = (d) => [...d.querySelectorAll('.fragment')];
+  const CLASES = ['activa', 'sale-adelante', 'sale-atras', 'llega-adelante', 'llega-atras', 'mismo-grupo'];
+
+  // Cifras que cuentan desde 0
+  function contar(d) {
+    d.querySelectorAll('[data-contar]').forEach((el) => {
+      const meta = Number(el.dataset.contar);
+      if (quieto) { el.textContent = meta; return; }
+      const inicio = performance.now() + 450;
+      el.textContent = '0';
+      const paso = (t) => {
+        const p = Math.min(1, Math.max(0, (t - inicio) / 1300));
+        el.textContent = Math.round(meta * (1 - Math.pow(1 - p, 3)));
+        if (p < 1 && d.classList.contains('activa')) requestAnimationFrame(paso);
+      };
+      requestAnimationFrame(paso);
+    });
+  }
+
+  // Una imagen grande sale de su miniatura (.mini.actual → .etapa-img): crece, gira y se asienta
+  function desdeMiniatura(d) {
+    const grande = d.querySelector('.etapa-img');
+    const mini = d.querySelector('.mini.actual');
+    if (!grande || !mini || quieto) return;
+    requestAnimationFrame(() => {
+      const a = mini.getBoundingClientRect();
+      const b = grande.getBoundingClientRect();
+      const dx = (a.left + a.width / 2 - (b.left + b.width / 2)) / escala;
+      const dy = (a.top + a.height / 2 - (b.top + b.height / 2)) / escala;
+      const s = a.width / b.width;
+      grande.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(${s}) rotate(-28deg)`, opacity: 0.4 },
+        { transform: 'translate(0, 0) scale(1.05) rotate(4deg)', opacity: 1, offset: 0.72 },
+        { transform: 'none', opacity: 1 },
+      ], { duration: 1150, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'both', delay: 150 });
+      mini.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 600, easing: 'ease-out' });
+    });
+  }
+
+  function mostrar(i, todosLosPasos, direccion) {
+    i = Math.max(0, Math.min(diapositivas.length - 1, i));
+    if (i === actual) return;
+    const vieja = diapositivas[actual];
+    const nueva = diapositivas[i];
+    const mismoGrupo = vieja && nueva.dataset.grupo && vieja.dataset.grupo === nueva.dataset.grupo;
+    diapositivas.forEach((d) => { if (d !== vieja) d.classList.remove(...CLASES); });
+    if (vieja) {
+      vieja.classList.remove(...CLASES);
+      if (!mismoGrupo && !quieto) {
+        vieja.classList.add(direccion < 0 ? 'sale-atras' : 'sale-adelante');
+        vieja.addEventListener('animationend', function fin(e) {
+          if (e.target !== vieja) return;
+          vieja.classList.remove('sale-atras', 'sale-adelante');
+          vieja.removeEventListener('animationend', fin);
+        });
+      }
+      vieja.querySelectorAll('video').forEach((v) => v.pause());
+    }
+    nueva.classList.add('activa');
+    if (vieja && !quieto) nueva.classList.add(mismoGrupo ? 'mismo-grupo' : direccion < 0 ? 'llega-atras' : 'llega-adelante');
+    nueva.querySelectorAll('video').forEach((v) => { v.currentTime = 0; v.play().catch(() => {}); });
+    pasos(nueva).forEach((f) => f.classList.toggle('visible', Boolean(todosLosPasos)));
+    if (nueva.dataset.pasos) ponerPaso(nueva, todosLosPasos ? Number(nueva.dataset.pasos) : 0);
+    actual = i;
+    contar(nueva);
+    desdeMiniatura(nueva);
+    const nota = nueva.querySelector('aside');
+    notas.textContent = nota ? nota.textContent : '';
+    history.replaceState(null, '', '#' + (i + 1));
+    if (quieto) requestAnimationFrame(dibujar);
+  }
+  // Diapositivas con pasos propios (data-pasos): cada clic suma un paso y la sección recibe p1…pN
+  function ponerPaso(d, k) {
+    d.dataset.paso = k;
+    for (let j = 1; j <= Number(d.dataset.pasos); j++) d.classList.toggle('p' + j, j <= k);
+  }
+  function siguiente() {
+    const d = diapositivas[actual];
+    if (d.dataset.pasos && Number(d.dataset.paso) < Number(d.dataset.pasos)) { ponerPaso(d, Number(d.dataset.paso) + 1); return; }
+    const pendiente = pasos(diapositivas[actual]).find((f) => !f.classList.contains('visible'));
+    if (pendiente) pendiente.classList.add('visible');
+    else if (actual < diapositivas.length - 1) mostrar(actual + 1, false, 1);
+  }
+  function anterior() {
+    const d = diapositivas[actual];
+    if (d.dataset.pasos && Number(d.dataset.paso) > 0) { ponerPaso(d, Number(d.dataset.paso) - 1); return; }
+    const vistos = pasos(diapositivas[actual]).filter((f) => f.classList.contains('visible'));
+    if (vistos.length) vistos[vistos.length - 1].classList.remove('visible');
+    else if (actual > 0) mostrar(actual - 1, true, -1);
+  }
+
+  // Fondo vivo: retícula isométrica que se desliza y pulsos de luz que la recorren
+  const C30 = Math.cos(Math.PI / 6), S30 = Math.sin(Math.PI / 6);
+  const pulsos = Array.from({ length: 9 }, () => nuevoPulso(true));
+  function nuevoPulso(inicial) {
+    const sube = Math.random() < 0.5;
+    return { x: inicial ? Math.random() * 1920 : -150, y: Math.random() * 1080 + (sube ? 300 : -300), vx: C30, vy: sube ? -S30 : S30, v: 0.6 + Math.random() * 0.9, largo: 90 + Math.random() * 120 };
+  }
+  let desplazamiento = 0;
+  function dibujar() {
+    const d = diapositivas[actual];
+    const lienzo = d && d.querySelector('.ambiente');
+    if (lienzo) {
+      const g = lienzo.getContext('2d');
+      const oscuro = true;
+      const base = getComputedStyle(d).getPropertyValue('--pulso').trim() || '106,165,255';
+      g.clearRect(0, 0, 1920, 1080);
+      g.lineWidth = 1;
+      g.strokeStyle = `rgba(${base},${oscuro ? 0.06 : 0.055})`;
+      const paso = 110;
+      const off = desplazamiento % paso;
+      g.beginPath();
+      for (let k = -2200; k < 3200; k += paso) {
+        const b = k + off;
+        g.moveTo(b, 0); g.lineTo(b + 1080 * C30 / S30, 1080);
+        g.moveTo(b, 1080); g.lineTo(b + 1080 * C30 / S30, 0);
+      }
+      g.stroke();
+      for (const p of pulsos) {
+        const grad = g.createLinearGradient(p.x - p.vx * p.largo, p.y - p.vy * p.largo, p.x, p.y);
+        grad.addColorStop(0, `rgba(${base},0)`);
+        grad.addColorStop(1, `rgba(${base},${oscuro ? 0.35 : 0.28})`);
+        g.strokeStyle = grad;
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(p.x - p.vx * p.largo, p.y - p.vy * p.largo);
+        g.lineTo(p.x, p.y);
+        g.stroke();
+        g.fillStyle = `rgba(${base},${oscuro ? 0.5 : 0.35})`;
+        g.beginPath(); g.arc(p.x, p.y, 2.5, 0, Math.PI * 2); g.fill();
+        if (!quieto) { p.x += p.vx * p.v; p.y += p.vy * p.v; }
+        if (p.x > 2100 || p.y < -200 || p.y > 1280) Object.assign(p, nuevoPulso(false));
+      }
+      if (!quieto) desplazamiento += 0.12;
+    }
+    if (!quieto) requestAnimationFrame(dibujar);
+  }
+
+  addEventListener('keydown', (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); siguiente(); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); anterior(); }
+    else if (e.key === 'Home') mostrar(0, false, -1);
+    else if (e.key === 'End') mostrar(diapositivas.length - 1, true, 1);
+    else if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+    else if (e.key === 'n' || e.key === 'N') notas.classList.toggle('abierta');
+  });
+  addEventListener('click', (e) => { if (!notas.contains(e.target)) (e.clientX < innerWidth / 4 ? anterior : siguiente)(); });
+  let x0 = null;
+  addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) (dx < 0 ? siguiente : anterior)(); x0 = null; });
+  let reposo;
+  addEventListener('mousemove', () => { document.body.classList.add('raton'); clearTimeout(reposo); reposo = setTimeout(() => document.body.classList.remove('raton'), 1800); });
+  addEventListener('resize', ajustar);
+  ajustar();
+  mostrar((parseInt(location.hash.slice(1), 10) || 1) - 1, false, 1);
+  requestAnimationFrame(dibujar);
+})();
+
+</script>
+</body>
+</html>
